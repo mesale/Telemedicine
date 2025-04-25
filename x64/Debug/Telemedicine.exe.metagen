@@ -1,0 +1,113 @@
+  Telemedicine.BookAppointment.resources - Embedded, ContainedInManifestFile, 
+  Telemedicine.DoctorLogin.resources - Embedded, ContainedInManifestFile, 
+  Telemedicine.MainMenu.resources - Embedded, ContainedInManifestFile, 
+  Telemedicine.PatientDashboard.resources - Embedded, ContainedInManifestFile, 
+  Telemedicine.DoctorDashboard.resources - Embedded, ContainedInManifestFile, 
+  Telemedicine.PatientLogin.resources - Embedded, ContainedInManifestFile, 
+  Telemedicine.PatientMedicalRecord.resources - Embedded, ContainedInManifestFile, 
+  Telemedicine.PatientRegister.resources - Embedded, ContainedInManifestFile, 
+  Telemedicine.SeeAppointment.resources - Embedded, ContainedInManifestFile, 
+ImageRuntimeVersion: v4.0.30319
+Assembly Telemedicine, Version=0.0.*, Culture=Invariant Language (Invariant Country): 
+	hash=SHA1, flags=PublicKey
+Assembly mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Assembly System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Assembly System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Assembly System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a: 
+	hash=None, flags=None
+Assembly System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Assembly System.Xml, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089: 
+	hash=None, flags=None
+Class Patient: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Int32 patientId : Public
+    System.String patientFirstName : Public
+    System.String patientLastName : Public
+    System.String patientEmail : Public
+    System.String patientPhone : Public
+    System.String patientPassword : Public
+    System.String patientDateOfBirth : Public
+Class Doctor: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Int32 id : Public
+    System.String doctorFirstName : Public
+    System.String doctorLastName : Public
+    System.String doctorEmail : Public
+    System.String doctorPassword : Public
+    System.String doctorDateOfBirth : Public
+    System.String doctorPhone : Public
+    System.String specialization : Public
+Class Appointment: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Int32 appointmentId : Public
+    Int32 patientId : Public
+    Int32 doctorId : Public
+    System.String scheduledTime : Public
+    Int32 durationMinuits : Public
+    System.String status : Public
+Class Telemedicine.BookAppointment: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(Patient): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Patient patient : Public
+    Doctor doctor : Public
+    Appointment appointment : Public
+Class Telemedicine.DoctorLogin: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Doctor doctor : Public
+Class Telemedicine.PatientLogin: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Patient patient : Public
+    Boolean switchToRegister : Public
+Class Telemedicine.MainMenu: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Boolean isDoctor : Public
+    Boolean isPatient : Public
+Class Telemedicine.PatientDashboard: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(Patient): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Boolean isBookAppointment : Public
+    Boolean isSeeAppointment : Public
+    Boolean isMedicalRecord : Public
+Class Telemedicine.DoctorDashboard: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(Doctor): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Doctor doctor : Public
+    Patient patient1 : Public
+    Patient patient2 : Public
+    Patient patient3 : Public
+    Appointment appointment1 : Public
+    Appointment appointment2 : Public
+    Appointment appointment3 : Public
+Class Telemedicine.SeeAppointment: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(Patient): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Patient patient : Public
+    Doctor doctor : Public
+Class Telemedicine.PatientMedicalRecord: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(Patient): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Patient patient : Public
+Class Telemedicine.PatientRegister: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Fields:
+    Patient patient : Public
+    Boolean switchToLogin : Public

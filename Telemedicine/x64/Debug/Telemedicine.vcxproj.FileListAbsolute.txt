@@ -1,0 +1,11 @@
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.vcxproj.AssemblyReference.cache
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.BookAppointment.resources
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.DoctorLogin.resources
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.MainMenu.resources
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.PatientDashboard.resources
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.DoctorDashboard.resources
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.PatientLogin.resources
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.PatientMedicalRecord.resources
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.PatientRegister.resources
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.vcxproj.GenerateResource.cache
+C:\Users\Mesale\source\repos\Telemedicine\Telemedicine\x64\Debug\Telemedicine.SeeAppointment.resources
