@@ -25,6 +25,22 @@ namespace Telemedicine {
         Appointment^ appointment1 = nullptr;
         Appointment^ appointment2 = nullptr;
     private: System::Windows::Forms::Button^ button1;
+    private: System::Windows::Forms::DataGridView^ dataGridView1;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ Column1;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ Column2;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ Column3;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ Column4;
+    private: System::Windows::Forms::DataGridViewTextBoxColumn^ Column5;
+
+
+
+
+
+
+
+
+
+
     public:
         Appointment^ appointment3 = nullptr;
         DoctorDashboard(Doctor^ doctor)
@@ -34,21 +50,7 @@ namespace Telemedicine {
 			//TODO: Add the constructor code here
 			//
             this->CenterToScreen();
-            this->lbAppointmentId1->Text = "";
-            this->lbAppointmentId2->Text = "";
-            this->lbAppointmentId3->Text = "";
-            this->lbPatientName1->Text = "";
-            this->lbPatientName2->Text = "";
-            this->lbPatientName3->Text = "";
-            this->lbScheduledTime1->Text = "";
-            this->lbScheduledTime2->Text = "";
-            this->lbScheduledTime3->Text = "";
-            this->lbDurationMinutes1->Text = "";
-            this->lbDurationMinutes2->Text = "";
-            this->lbDurationMinutes3->Text = "";
-            this->lbStatus1->Text = "";
-            this->lbStatus2->Text = "";
-            this->lbStatus3->Text = "";
+
             this->doctor = doctor;
             this->lbDoctor->Text = String::Concat(" Dr.", doctor->doctorFirstName);
             try {
@@ -57,7 +59,7 @@ namespace Telemedicine {
                 sqlConn.Open();
 
                 // Modified query to get both appointment and patient data in one query
-                String^ sqlQuery = "SELECT TOP 3 a.appointment_id, a.patient_id, a.scheduled_time, "
+                String^ sqlQuery = "SELECT  a.appointment_id, a.patient_id, a.scheduled_time, "
                     "a.duration_minutes, a.status, p.first_name, p.last_name "
                     "FROM appointment a "
                     "INNER JOIN patient p ON a.patient_id = p.patient_id "
@@ -68,58 +70,22 @@ namespace Telemedicine {
                 command.Parameters->AddWithValue("@doctorId", doctor->id);
 
                 SqlDataReader^ reader = command.ExecuteReader();
-                Appointment^ currentAppointment = nullptr;;
-                int appointmentCount = 0;
-                while (reader->Read() && appointmentCount < 3) {
-                    appointmentCount++;
+                //Appointment^ currentAppointment = nullptr;
+                while (reader->Read())
+                {
 
-                    // Create new patient and appointment objects
-                    Patient^ currentPatient = gcnew Patient();
-                    currentAppointment = gcnew Appointment();
+                    int appointmentId = safe_cast<int>(reader["appointment_id"]);
+                    String^ patientFirstName = safe_cast<String^>(reader["first_name"]);
+                    String^ patientLastName = safe_cast<String^>(reader["last_name"]);
+                    String^ formattedTime = (reader["scheduled_time"]->ToString());
+                    int durationMinutes = safe_cast<int>(reader["duration_minutes"]);
+                    String^ status = safe_cast<String^>(reader["status"]);
+                    this->dataGridView1->Rows->Add(appointmentId, patientFirstName + " " + patientLastName, formattedTime, durationMinutes, status);
 
-                    // Read appointment data
-                    if (!reader->IsDBNull(0)) currentAppointment->appointmentId = reader->GetInt32(0);
-                    if (appointmentCount == 1) this->lbAppointmentId1->Text = currentAppointment->appointmentId.ToString();
-                    if (appointmentCount == 2) this->lbAppointmentId2->Text = currentAppointment->appointmentId.ToString();
-                    if (!reader->IsDBNull(1)) currentPatient->patientId = reader->GetInt32(1);
-
-                    // Read patient data
-                    if (!reader->IsDBNull(5)) currentPatient->patientFirstName = reader->GetString(5);
-                    if (!reader->IsDBNull(6)) currentPatient->patientLastName = reader->GetString(6);
-
-                    // Update UI based on which appointment we're processing
-                    switch (appointmentCount) {
-                    case 1:
-                        patient1 = currentPatient;
-                        appointment1 = currentAppointment;
-                        if (!reader->IsDBNull(2)) this->lbScheduledTime1->Text = reader->GetDateTime(2).ToString();
-                        if (!reader->IsDBNull(3)) this->lbDurationMinutes1->Text = reader->GetInt32(3).ToString();
-                        if (!reader->IsDBNull(4)) this->lbStatus1->Text = reader->GetString(4);
-                        this->lbPatientName1->Text = String::Concat(currentPatient->patientFirstName, " ", currentPatient->patientLastName);
-                        break;
-
-                    case 2:
-                        patient2 = currentPatient;
-                        appointment2 = currentAppointment;
-                        if (!reader->IsDBNull(2)) this->lbScheduledTime2->Text = reader->GetDateTime(2).ToString();
-                        if (!reader->IsDBNull(3)) this->lbDurationMinutes2->Text = reader->GetInt32(3).ToString();
-                        if (!reader->IsDBNull(4)) this->lbStatus2->Text = reader->GetString(4);
-                        this->lbPatientName2->Text = String::Concat(currentPatient->patientFirstName, " ", currentPatient->patientLastName);
-                        break;
-
-                    case 3:
-                        patient3 = currentPatient;
-                        appointment3 = currentAppointment;
-                        if (!reader->IsDBNull(2)) this->lbScheduledTime3->Text = reader->GetDateTime(2).ToString();
-                        if (!reader->IsDBNull(3)) this->lbDurationMinutes3->Text = reader->GetInt32(3).ToString();
-                        if (!reader->IsDBNull(4)) this->lbStatus3->Text = reader->GetString(4);
-                        this->lbPatientName3->Text = String::Concat(currentPatient->patientFirstName, " ", currentPatient->patientLastName);
-                        break;
-                    }
                 }
-                if (appointmentCount == 3) this->lbAppointmentId3->Text = currentAppointment->appointmentId.ToString();
 
                 reader->Close();
+
                 sqlConn.Close();
             }
             catch (SqlException^ sqlEx) {
@@ -146,30 +112,11 @@ namespace Telemedicine {
 	private: System::Windows::Forms::Label^ label1;
     private: System::Windows::Forms::Label^ lbDoctor;
 
-	private: System::Windows::Forms::TableLayoutPanel^ tableLayoutPanel1;
+
 	private: System::Windows::Forms::TabControl^ tabControl1;
 	private: System::Windows::Forms::TabPage^ tabPage1;
 	private: System::Windows::Forms::TabPage^ tabPage2;
-	private: System::Windows::Forms::Label^ label3;
-    private: System::Windows::Forms::Label^ lbAppointmentId1;
 
-
-	private: System::Windows::Forms::Label^ label5;
-    private: System::Windows::Forms::Label^ lbPatientName1;
-
-    private: System::Windows::Forms::Label^ lbStatus1;
-
-
-	private: System::Windows::Forms::Label^ label12;
-	private: System::Windows::Forms::Label^ label13;
-    private: System::Windows::Forms::Label^ lbScheduledTime1;
-    private: System::Windows::Forms::Label^ lbDurationMinutes1;
-
-
-
-
-
-	private: System::Windows::Forms::Label^ label9;
 	private: System::Windows::Forms::TableLayoutPanel^ tableLayoutPanel2;
     private: System::Windows::Forms::TextBox^ tbxRefills;
     private: System::Windows::Forms::TextBox^ tbxInstructions;
@@ -195,25 +142,25 @@ private: System::Windows::Forms::Label^ label15;
 
 
     private: System::Windows::Forms::Button^ btnMedicalRecordSubmit;
-    private: System::Windows::Forms::Label^ lbStatus3;
-
-    private: System::Windows::Forms::Label^ lbStatus2;
-
-    private: System::Windows::Forms::Label^ lbScheduledTime3;
-    private: System::Windows::Forms::Label^ lbAppointmentId3;
-
-
-    private: System::Windows::Forms::Label^ lbScheduledTime2;
-    private: System::Windows::Forms::Label^ lbAppointmentId2;
-
-
-    private: System::Windows::Forms::Label^ lbPatientName2;
-private: System::Windows::Forms::Label^ lbDurationMinutes2;
 
 
 
-    private: System::Windows::Forms::Label^ lbPatientName3;
-private: System::Windows::Forms::Label^ lbDurationMinutes3;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -251,29 +198,14 @@ private: System::Windows::Forms::Label^ lbDurationMinutes3;
 		{
             this->label1 = (gcnew System::Windows::Forms::Label());
             this->lbDoctor = (gcnew System::Windows::Forms::Label());
-            this->tableLayoutPanel1 = (gcnew System::Windows::Forms::TableLayoutPanel());
-            this->label3 = (gcnew System::Windows::Forms::Label());
-            this->lbStatus3 = (gcnew System::Windows::Forms::Label());
-            this->lbStatus2 = (gcnew System::Windows::Forms::Label());
-            this->lbStatus1 = (gcnew System::Windows::Forms::Label());
-            this->label12 = (gcnew System::Windows::Forms::Label());
-            this->label13 = (gcnew System::Windows::Forms::Label());
-            this->lbScheduledTime3 = (gcnew System::Windows::Forms::Label());
-            this->lbAppointmentId3 = (gcnew System::Windows::Forms::Label());
-            this->lbScheduledTime1 = (gcnew System::Windows::Forms::Label());
-            this->lbScheduledTime2 = (gcnew System::Windows::Forms::Label());
-            this->lbDurationMinutes1 = (gcnew System::Windows::Forms::Label());
-            this->lbAppointmentId2 = (gcnew System::Windows::Forms::Label());
-            this->label9 = (gcnew System::Windows::Forms::Label());
-            this->lbAppointmentId1 = (gcnew System::Windows::Forms::Label());
-            this->label5 = (gcnew System::Windows::Forms::Label());
-            this->lbPatientName1 = (gcnew System::Windows::Forms::Label());
-            this->lbPatientName2 = (gcnew System::Windows::Forms::Label());
-            this->lbDurationMinutes2 = (gcnew System::Windows::Forms::Label());
-            this->lbPatientName3 = (gcnew System::Windows::Forms::Label());
-            this->lbDurationMinutes3 = (gcnew System::Windows::Forms::Label());
             this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
             this->tabPage1 = (gcnew System::Windows::Forms::TabPage());
+            this->dataGridView1 = (gcnew System::Windows::Forms::DataGridView());
+            this->Column1 = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->Column2 = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->Column3 = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->Column4 = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+            this->Column5 = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
             this->button1 = (gcnew System::Windows::Forms::Button());
             this->tabPage2 = (gcnew System::Windows::Forms::TabPage());
             this->btnMedicalRecordSubmit = (gcnew System::Windows::Forms::Button());
@@ -290,9 +222,9 @@ private: System::Windows::Forms::Label^ lbDurationMinutes3;
             this->label16 = (gcnew System::Windows::Forms::Label());
             this->label7 = (gcnew System::Windows::Forms::Label());
             this->label15 = (gcnew System::Windows::Forms::Label());
-            this->tableLayoutPanel1->SuspendLayout();
             this->tabControl1->SuspendLayout();
             this->tabPage1->SuspendLayout();
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dataGridView1))->BeginInit();
             this->tabPage2->SuspendLayout();
             this->tableLayoutPanel2->SuspendLayout();
             this->SuspendLayout();
@@ -321,330 +253,6 @@ private: System::Windows::Forms::Label^ lbDurationMinutes3;
             this->lbDoctor->TabIndex = 1;
             this->lbDoctor->Text = L"Doctor";
             // 
-            // tableLayoutPanel1
-            // 
-            this->tableLayoutPanel1->Anchor = System::Windows::Forms::AnchorStyles::None;
-            this->tableLayoutPanel1->ColumnCount = 5;
-            this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-                6.840087F)));
-            this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-                26.72191F)));
-            this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-                26.30274F)));
-            this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-                25.35962F)));
-            this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-                14.77564F)));
-            this->tableLayoutPanel1->Controls->Add(this->label3, 0, 0);
-            this->tableLayoutPanel1->Controls->Add(this->lbStatus3, 4, 3);
-            this->tableLayoutPanel1->Controls->Add(this->lbStatus2, 4, 2);
-            this->tableLayoutPanel1->Controls->Add(this->lbStatus1, 4, 1);
-            this->tableLayoutPanel1->Controls->Add(this->label12, 3, 0);
-            this->tableLayoutPanel1->Controls->Add(this->label13, 4, 0);
-            this->tableLayoutPanel1->Controls->Add(this->lbScheduledTime3, 2, 3);
-            this->tableLayoutPanel1->Controls->Add(this->lbAppointmentId3, 0, 3);
-            this->tableLayoutPanel1->Controls->Add(this->lbScheduledTime1, 2, 1);
-            this->tableLayoutPanel1->Controls->Add(this->lbScheduledTime2, 2, 2);
-            this->tableLayoutPanel1->Controls->Add(this->lbDurationMinutes1, 3, 1);
-            this->tableLayoutPanel1->Controls->Add(this->lbAppointmentId2, 0, 2);
-            this->tableLayoutPanel1->Controls->Add(this->label9, 2, 0);
-            this->tableLayoutPanel1->Controls->Add(this->lbAppointmentId1, 0, 1);
-            this->tableLayoutPanel1->Controls->Add(this->label5, 1, 0);
-            this->tableLayoutPanel1->Controls->Add(this->lbPatientName1, 1, 1);
-            this->tableLayoutPanel1->Controls->Add(this->lbPatientName2, 1, 2);
-            this->tableLayoutPanel1->Controls->Add(this->lbDurationMinutes2, 3, 2);
-            this->tableLayoutPanel1->Controls->Add(this->lbPatientName3, 1, 3);
-            this->tableLayoutPanel1->Controls->Add(this->lbDurationMinutes3, 3, 3);
-            this->tableLayoutPanel1->Location = System::Drawing::Point(26, 27);
-            this->tableLayoutPanel1->Name = L"tableLayoutPanel1";
-            this->tableLayoutPanel1->RowCount = 4;
-            this->tableLayoutPanel1->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 25)));
-            this->tableLayoutPanel1->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 25)));
-            this->tableLayoutPanel1->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 25)));
-            this->tableLayoutPanel1->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 25)));
-            this->tableLayoutPanel1->Size = System::Drawing::Size(956, 203);
-            this->tableLayoutPanel1->TabIndex = 2;
-            // 
-            // label3
-            // 
-            this->label3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->label3->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->label3->Location = System::Drawing::Point(3, 0);
-            this->label3->Name = L"label3";
-            this->label3->Size = System::Drawing::Size(59, 50);
-            this->label3->TabIndex = 0;
-            this->label3->Text = L"ID";
-            this->label3->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbStatus3
-            // 
-            this->lbStatus3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbStatus3->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbStatus3->Location = System::Drawing::Point(816, 150);
-            this->lbStatus3->Name = L"lbStatus3";
-            this->lbStatus3->Size = System::Drawing::Size(137, 53);
-            this->lbStatus3->TabIndex = 3;
-            this->lbStatus3->Text = L"status";
-            this->lbStatus3->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbStatus2
-            // 
-            this->lbStatus2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbStatus2->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbStatus2->Location = System::Drawing::Point(816, 100);
-            this->lbStatus2->Name = L"lbStatus2";
-            this->lbStatus2->Size = System::Drawing::Size(137, 50);
-            this->lbStatus2->TabIndex = 3;
-            this->lbStatus2->Text = L"status";
-            this->lbStatus2->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbStatus1
-            // 
-            this->lbStatus1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbStatus1->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbStatus1->Location = System::Drawing::Point(816, 50);
-            this->lbStatus1->Name = L"lbStatus1";
-            this->lbStatus1->Size = System::Drawing::Size(137, 50);
-            this->lbStatus1->TabIndex = 3;
-            this->lbStatus1->Text = L"status";
-            this->lbStatus1->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // label12
-            // 
-            this->label12->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->label12->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->label12->Location = System::Drawing::Point(574, 0);
-            this->label12->Name = L"label12";
-            this->label12->Size = System::Drawing::Size(236, 50);
-            this->label12->TabIndex = 3;
-            this->label12->Text = L"Duration minutes";
-            this->label12->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // label13
-            // 
-            this->label13->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->label13->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->label13->Location = System::Drawing::Point(816, 0);
-            this->label13->Name = L"label13";
-            this->label13->Size = System::Drawing::Size(137, 50);
-            this->label13->TabIndex = 2;
-            this->label13->Text = L"Status";
-            this->label13->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbScheduledTime3
-            // 
-            this->lbScheduledTime3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbScheduledTime3->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbScheduledTime3->Location = System::Drawing::Point(323, 150);
-            this->lbScheduledTime3->Name = L"lbScheduledTime3";
-            this->lbScheduledTime3->Size = System::Drawing::Size(245, 53);
-            this->lbScheduledTime3->TabIndex = 3;
-            this->lbScheduledTime3->Text = L"scheduled time";
-            this->lbScheduledTime3->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbAppointmentId3
-            // 
-            this->lbAppointmentId3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbAppointmentId3->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbAppointmentId3->Location = System::Drawing::Point(3, 150);
-            this->lbAppointmentId3->Name = L"lbAppointmentId3";
-            this->lbAppointmentId3->Size = System::Drawing::Size(59, 53);
-            this->lbAppointmentId3->TabIndex = 1;
-            this->lbAppointmentId3->Text = L"id";
-            this->lbAppointmentId3->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbScheduledTime1
-            // 
-            this->lbScheduledTime1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbScheduledTime1->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbScheduledTime1->Location = System::Drawing::Point(323, 50);
-            this->lbScheduledTime1->Name = L"lbScheduledTime1";
-            this->lbScheduledTime1->Size = System::Drawing::Size(245, 50);
-            this->lbScheduledTime1->TabIndex = 3;
-            this->lbScheduledTime1->Text = L"scheduled time";
-            this->lbScheduledTime1->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbScheduledTime2
-            // 
-            this->lbScheduledTime2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbScheduledTime2->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbScheduledTime2->Location = System::Drawing::Point(323, 100);
-            this->lbScheduledTime2->Name = L"lbScheduledTime2";
-            this->lbScheduledTime2->Size = System::Drawing::Size(245, 50);
-            this->lbScheduledTime2->TabIndex = 3;
-            this->lbScheduledTime2->Text = L"scheduled time";
-            this->lbScheduledTime2->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbDurationMinutes1
-            // 
-            this->lbDurationMinutes1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbDurationMinutes1->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbDurationMinutes1->Location = System::Drawing::Point(574, 50);
-            this->lbDurationMinutes1->Name = L"lbDurationMinutes1";
-            this->lbDurationMinutes1->Size = System::Drawing::Size(236, 50);
-            this->lbDurationMinutes1->TabIndex = 2;
-            this->lbDurationMinutes1->Text = L"duration minutes";
-            this->lbDurationMinutes1->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbAppointmentId2
-            // 
-            this->lbAppointmentId2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbAppointmentId2->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbAppointmentId2->Location = System::Drawing::Point(3, 100);
-            this->lbAppointmentId2->Name = L"lbAppointmentId2";
-            this->lbAppointmentId2->Size = System::Drawing::Size(59, 50);
-            this->lbAppointmentId2->TabIndex = 1;
-            this->lbAppointmentId2->Text = L"id";
-            this->lbAppointmentId2->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // label9
-            // 
-            this->label9->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->label9->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->label9->Location = System::Drawing::Point(323, 0);
-            this->label9->Name = L"label9";
-            this->label9->Size = System::Drawing::Size(245, 50);
-            this->label9->TabIndex = 2;
-            this->label9->Text = L"Scheduled Time";
-            this->label9->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbAppointmentId1
-            // 
-            this->lbAppointmentId1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbAppointmentId1->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbAppointmentId1->Location = System::Drawing::Point(3, 50);
-            this->lbAppointmentId1->Name = L"lbAppointmentId1";
-            this->lbAppointmentId1->Size = System::Drawing::Size(59, 50);
-            this->lbAppointmentId1->TabIndex = 1;
-            this->lbAppointmentId1->Text = L"id";
-            this->lbAppointmentId1->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // label5
-            // 
-            this->label5->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->label5->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->label5->Location = System::Drawing::Point(68, 0);
-            this->label5->Name = L"label5";
-            this->label5->Size = System::Drawing::Size(249, 50);
-            this->label5->TabIndex = 2;
-            this->label5->Text = L"Patient Name";
-            this->label5->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbPatientName1
-            // 
-            this->lbPatientName1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbPatientName1->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbPatientName1->Location = System::Drawing::Point(68, 50);
-            this->lbPatientName1->Name = L"lbPatientName1";
-            this->lbPatientName1->Size = System::Drawing::Size(249, 50);
-            this->lbPatientName1->TabIndex = 3;
-            this->lbPatientName1->Text = L"patient name";
-            this->lbPatientName1->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbPatientName2
-            // 
-            this->lbPatientName2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbPatientName2->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbPatientName2->Location = System::Drawing::Point(68, 100);
-            this->lbPatientName2->Name = L"lbPatientName2";
-            this->lbPatientName2->Size = System::Drawing::Size(249, 50);
-            this->lbPatientName2->TabIndex = 3;
-            this->lbPatientName2->Text = L"patient name";
-            this->lbPatientName2->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbDurationMinutes2
-            // 
-            this->lbDurationMinutes2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbDurationMinutes2->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbDurationMinutes2->Location = System::Drawing::Point(574, 100);
-            this->lbDurationMinutes2->Name = L"lbDurationMinutes2";
-            this->lbDurationMinutes2->Size = System::Drawing::Size(236, 50);
-            this->lbDurationMinutes2->TabIndex = 2;
-            this->lbDurationMinutes2->Text = L"duration minutes";
-            this->lbDurationMinutes2->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbPatientName3
-            // 
-            this->lbPatientName3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbPatientName3->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbPatientName3->Location = System::Drawing::Point(68, 150);
-            this->lbPatientName3->Name = L"lbPatientName3";
-            this->lbPatientName3->Size = System::Drawing::Size(249, 53);
-            this->lbPatientName3->TabIndex = 3;
-            this->lbPatientName3->Text = L"patient name";
-            this->lbPatientName3->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
-            // lbDurationMinutes3
-            // 
-            this->lbDurationMinutes3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-                | System::Windows::Forms::AnchorStyles::Left)
-                | System::Windows::Forms::AnchorStyles::Right));
-            this->lbDurationMinutes3->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->lbDurationMinutes3->Location = System::Drawing::Point(574, 150);
-            this->lbDurationMinutes3->Name = L"lbDurationMinutes3";
-            this->lbDurationMinutes3->Size = System::Drawing::Size(236, 53);
-            this->lbDurationMinutes3->TabIndex = 2;
-            this->lbDurationMinutes3->Text = L"duration minutes";
-            this->lbDurationMinutes3->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-            // 
             // tabControl1
             // 
             this->tabControl1->Anchor = System::Windows::Forms::AnchorStyles::None;
@@ -661,14 +269,62 @@ private: System::Windows::Forms::Label^ lbDurationMinutes3;
             // tabPage1
             // 
             this->tabPage1->BackColor = System::Drawing::Color::Tomato;
+            this->tabPage1->Controls->Add(this->dataGridView1);
             this->tabPage1->Controls->Add(this->button1);
-            this->tabPage1->Controls->Add(this->tableLayoutPanel1);
             this->tabPage1->Location = System::Drawing::Point(4, 24);
             this->tabPage1->Name = L"tabPage1";
             this->tabPage1->Padding = System::Windows::Forms::Padding(3);
             this->tabPage1->Size = System::Drawing::Size(1007, 481);
             this->tabPage1->TabIndex = 0;
             this->tabPage1->Text = L"Appointment";
+            // 
+            // dataGridView1
+            // 
+            this->dataGridView1->AllowUserToAddRows = false;
+            this->dataGridView1->AllowUserToDeleteRows = false;
+            this->dataGridView1->AutoSizeColumnsMode = System::Windows::Forms::DataGridViewAutoSizeColumnsMode::Fill;
+            this->dataGridView1->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+            this->dataGridView1->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(5) {
+                this->Column1,
+                    this->Column2, this->Column3, this->Column4, this->Column5
+            });
+            this->dataGridView1->Location = System::Drawing::Point(-4, 0);
+            this->dataGridView1->Name = L"dataGridView1";
+            this->dataGridView1->ReadOnly = true;
+            this->dataGridView1->RowHeadersWidth = 51;
+            this->dataGridView1->RowTemplate->Height = 24;
+            this->dataGridView1->Size = System::Drawing::Size(1011, 317);
+            this->dataGridView1->TabIndex = 4;
+            // 
+            // Column1
+            // 
+            this->Column1->HeaderText = L"ID";
+            this->Column1->MinimumWidth = 6;
+            this->Column1->Name = L"Column1";
+            // 
+            // Column2
+            // 
+            this->Column2->HeaderText = L"Patient Name";
+            this->Column2->MinimumWidth = 6;
+            this->Column2->Name = L"Column2";
+            // 
+            // Column3
+            // 
+            this->Column3->HeaderText = L"Schedule Time";
+            this->Column3->MinimumWidth = 6;
+            this->Column3->Name = L"Column3";
+            // 
+            // Column4
+            // 
+            this->Column4->HeaderText = L"Duration Minutes";
+            this->Column4->MinimumWidth = 6;
+            this->Column4->Name = L"Column4";
+            // 
+            // Column5
+            // 
+            this->Column5->HeaderText = L"Status";
+            this->Column5->MinimumWidth = 6;
+            this->Column5->Name = L"Column5";
             // 
             // button1
             // 
@@ -896,9 +552,9 @@ private: System::Windows::Forms::Label^ lbDurationMinutes3;
             this->MinimumSize = System::Drawing::Size(1096, 850);
             this->Name = L"DoctorDashboard";
             this->Text = L"PatientDashboardForm";
-            this->tableLayoutPanel1->ResumeLayout(false);
             this->tabControl1->ResumeLayout(false);
             this->tabPage1->ResumeLayout(false);
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dataGridView1))->EndInit();
             this->tabPage2->ResumeLayout(false);
             this->tableLayoutPanel2->ResumeLayout(false);
             this->tableLayoutPanel2->PerformLayout();

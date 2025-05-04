@@ -19,49 +19,56 @@ namespace Telemedicine {
 	{
 	public:
 		Patient^ patient;
-		Doctor^ doctor = nullptr;
+	private: System::Windows::Forms::DataGridView^ dataGridView1;
+	private: System::Windows::Forms::DataGridViewTextBoxColumn^ ID;
+	private: System::Windows::Forms::DataGridViewTextBoxColumn^ Column1;
+	private: System::Windows::Forms::DataGridViewTextBoxColumn^ Column2;
+	private: System::Windows::Forms::DataGridViewTextBoxColumn^ Column3;
+	private: System::Windows::Forms::DataGridViewTextBoxColumn^ Status;
+	private: System::Windows::Forms::DataGridViewButtonColumn^ Cancel;
+	private: System::Windows::Forms::DataGridViewButtonColumn^ Completed;
+
+	public:
+	 
+		   Doctor^ doctor = nullptr;
 		SeeAppointment(Patient^ patient)
 		{
 			InitializeComponent();
 			//
 			//TODO: Add the constructor code here
 			//
-			this->lbDoctorName->Text = "";
-			this->lbScheduledTime->Text = "";
-			this->lbDurationMinutes->Text = "";
-			this->lbStatus->Text = "";
+
 			this->patient = patient;
 			  try {
 				  String^ connString = "Data Source=localhost\\sqlexpress;Initial Catalog=test;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
 				  SqlConnection sqlConn(connString);
 				  sqlConn.Open();
 
-				  String^ sqlQuery = "SELECT doctor_id, scheduled_time, duration_minutes, status FROM appointment WHERE patient_id = @patientId;";
+				  String^ sqlQuery = "SELECT a.appointment_id, a.doctor_id, a.scheduled_time,"
+									 "a.duration_minutes, a.status, d.first_name, d.last_name "
+									 "FROM appointment a INNER JOIN doctor d ON a.doctor_id = d.doctor_id "
+									 "WHERE a.patient_id = @patientId "
+									 "ORDER BY a.scheduled_time;";
 				  SqlCommand command(sqlQuery, % sqlConn);
 				  command.Parameters->AddWithValue("@patientId", patient->patientId);
 
 				  SqlDataReader^ reader = command.ExecuteReader();
-				  if (reader->Read()) {
+				  while (reader->Read()) {
 					  doctor = gcnew Doctor;
-					  doctor->id = reader->GetInt32(0);
-					  this->lbScheduledTime->Text = (reader->GetDateTime(1)).ToString();
-					  this->lbDurationMinutes->Text = reader->GetInt32(2).ToString();
-					  this->lbStatus->Text = reader->GetString(3);
-					  reader->Close();
-
-					  String^ sqlQuery2 = "SELECT first_name, last_name FROM doctor WHERE doctor_id = @doctorId;";
-					  SqlCommand command2(sqlQuery2, % sqlConn);
-					  command2.Parameters->AddWithValue("@doctorId", doctor->id);
-
-					  SqlDataReader^ reader2 = command2.ExecuteReader();
-					  if (reader2->Read()) {
-						  doctor->doctorFirstName = reader2->GetString(0);
-						  doctor->doctorLastName = reader2->GetString(1);
-						  reader2->Close();
-					  }
-					  this->lbDoctorName->Text = String::Concat(doctor->doctorFirstName, " ", doctor->doctorLastName);
+					  int appointmentId = safe_cast<int>(reader["appointment_id"]);
+					  doctor->doctorFirstName = safe_cast<String^>(reader["first_name"]);
+					  doctor->doctorLastName = safe_cast<String^>(reader["last_name"]);
+					  String^ scheduledTime = (reader["scheduled_time"])->ToString();
+					  String^ duration =(reader["duration_minutes"])->ToString();
+					  String^ status = safe_cast<String^>(reader["status"]);
+					  
+					  String^ doctorName = String::Concat(doctor->doctorFirstName, " ", doctor->doctorLastName);
+						
+					  this->dataGridView1->Rows->Add(appointmentId, doctorName, scheduledTime, duration, status);
+					  
 
 				  }
+					reader->Close();
 			  }
 			  catch (SqlException^ sqlEx)
 			  {
@@ -87,24 +94,24 @@ namespace Telemedicine {
 				delete components;
 			}
 		}
-	private: System::Windows::Forms::TableLayoutPanel^ tableLayoutPanel1;
-	private: System::Windows::Forms::Label^ label1;
-	private: System::Windows::Forms::Label^ lbDoctorName;
-	private: System::Windows::Forms::Label^ lbDurationMinutes;
-	private: System::Windows::Forms::Label^ lbStatus;
 
 
 
-	private: System::Windows::Forms::Label^ lbScheduledTime;
 
-	private: System::Windows::Forms::Label^ label7;
-	private: System::Windows::Forms::Label^ label6;
-	private: System::Windows::Forms::Label^ label5;
+
+
+
+
+
+
+
+
+
 	private: System::Windows::Forms::Label^ label3;
-	private: System::Windows::Forms::Button^ btnCancelAppointment;
 
-	private: System::Windows::Forms::TableLayoutPanel^ tableLayoutPanel2;
-	private: System::Windows::Forms::Button^ btnAppointmentCompleted;
+
+
+
 
 	protected:
 
@@ -121,162 +128,17 @@ namespace Telemedicine {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-			this->tableLayoutPanel1 = (gcnew System::Windows::Forms::TableLayoutPanel());
-			this->lbDurationMinutes = (gcnew System::Windows::Forms::Label());
-			this->lbStatus = (gcnew System::Windows::Forms::Label());
-			this->lbScheduledTime = (gcnew System::Windows::Forms::Label());
-			this->label7 = (gcnew System::Windows::Forms::Label());
-			this->label6 = (gcnew System::Windows::Forms::Label());
-			this->label5 = (gcnew System::Windows::Forms::Label());
-			this->label1 = (gcnew System::Windows::Forms::Label());
-			this->lbDoctorName = (gcnew System::Windows::Forms::Label());
 			this->label3 = (gcnew System::Windows::Forms::Label());
-			this->btnCancelAppointment = (gcnew System::Windows::Forms::Button());
-			this->tableLayoutPanel2 = (gcnew System::Windows::Forms::TableLayoutPanel());
-			this->btnAppointmentCompleted = (gcnew System::Windows::Forms::Button());
-			this->tableLayoutPanel1->SuspendLayout();
-			this->tableLayoutPanel2->SuspendLayout();
+			this->dataGridView1 = (gcnew System::Windows::Forms::DataGridView());
+			this->ID = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+			this->Column1 = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+			this->Column2 = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+			this->Column3 = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+			this->Status = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
+			this->Cancel = (gcnew System::Windows::Forms::DataGridViewButtonColumn());
+			this->Completed = (gcnew System::Windows::Forms::DataGridViewButtonColumn());
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dataGridView1))->BeginInit();
 			this->SuspendLayout();
-			// 
-			// tableLayoutPanel1
-			// 
-			this->tableLayoutPanel1->Anchor = System::Windows::Forms::AnchorStyles::None;
-			this->tableLayoutPanel1->ColumnCount = 4;
-			this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-				46.01594F)));
-			this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-				53.98406F)));
-			this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Absolute,
-				232)));
-			this->tableLayoutPanel1->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Absolute,
-				158)));
-			this->tableLayoutPanel1->Controls->Add(this->lbDurationMinutes, 2, 1);
-			this->tableLayoutPanel1->Controls->Add(this->lbStatus, 3, 1);
-			this->tableLayoutPanel1->Controls->Add(this->lbScheduledTime, 1, 1);
-			this->tableLayoutPanel1->Controls->Add(this->label7, 3, 0);
-			this->tableLayoutPanel1->Controls->Add(this->label6, 1, 0);
-			this->tableLayoutPanel1->Controls->Add(this->label5, 2, 0);
-			this->tableLayoutPanel1->Controls->Add(this->label1, 0, 0);
-			this->tableLayoutPanel1->Controls->Add(this->lbDoctorName, 0, 1);
-			this->tableLayoutPanel1->Location = System::Drawing::Point(84, 304);
-			this->tableLayoutPanel1->Name = L"tableLayoutPanel1";
-			this->tableLayoutPanel1->RowCount = 2;
-			this->tableLayoutPanel1->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
-			this->tableLayoutPanel1->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
-			this->tableLayoutPanel1->Size = System::Drawing::Size(1038, 135);
-			this->tableLayoutPanel1->TabIndex = 0;
-			// 
-			// lbDurationMinutes
-			// 
-			this->lbDurationMinutes->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->lbDurationMinutes->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->lbDurationMinutes->Location = System::Drawing::Point(650, 67);
-			this->lbDurationMinutes->Name = L"lbDurationMinutes";
-			this->lbDurationMinutes->Size = System::Drawing::Size(226, 68);
-			this->lbDurationMinutes->TabIndex = 0;
-			this->lbDurationMinutes->Text = L"duration minutes";
-			this->lbDurationMinutes->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			// 
-			// lbStatus
-			// 
-			this->lbStatus->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->lbStatus->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->lbStatus->Location = System::Drawing::Point(882, 67);
-			this->lbStatus->Name = L"lbStatus";
-			this->lbStatus->Size = System::Drawing::Size(153, 68);
-			this->lbStatus->TabIndex = 1;
-			this->lbStatus->Text = L"status";
-			this->lbStatus->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			// 
-			// lbScheduledTime
-			// 
-			this->lbScheduledTime->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->lbScheduledTime->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->lbScheduledTime->Location = System::Drawing::Point(301, 67);
-			this->lbScheduledTime->Name = L"lbScheduledTime";
-			this->lbScheduledTime->Size = System::Drawing::Size(343, 68);
-			this->lbScheduledTime->TabIndex = 0;
-			this->lbScheduledTime->Text = L"scheduled time";
-			this->lbScheduledTime->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			// 
-			// label7
-			// 
-			this->label7->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->label7->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label7->Location = System::Drawing::Point(882, 0);
-			this->label7->Name = L"label7";
-			this->label7->Size = System::Drawing::Size(153, 67);
-			this->label7->TabIndex = 1;
-			this->label7->Text = L"Status";
-			this->label7->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			// 
-			// label6
-			// 
-			this->label6->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->label6->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label6->Location = System::Drawing::Point(301, 0);
-			this->label6->Name = L"label6";
-			this->label6->Size = System::Drawing::Size(343, 67);
-			this->label6->TabIndex = 0;
-			this->label6->Text = L"Scheduled Time";
-			this->label6->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			// 
-			// label5
-			// 
-			this->label5->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->label5->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label5->Location = System::Drawing::Point(650, 0);
-			this->label5->Name = L"label5";
-			this->label5->Size = System::Drawing::Size(226, 67);
-			this->label5->TabIndex = 1;
-			this->label5->Text = L"Duration minutes";
-			this->label5->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			// 
-			// label1
-			// 
-			this->label1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->label1->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->label1->Location = System::Drawing::Point(3, 0);
-			this->label1->Name = L"label1";
-			this->label1->Size = System::Drawing::Size(292, 67);
-			this->label1->TabIndex = 0;
-			this->label1->Text = L"Doctor Name";
-			this->label1->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
-			// 
-			// lbDoctorName
-			// 
-			this->lbDoctorName->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->lbDoctorName->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->lbDoctorName->Location = System::Drawing::Point(3, 67);
-			this->lbDoctorName->Name = L"lbDoctorName";
-			this->lbDoctorName->Size = System::Drawing::Size(292, 68);
-			this->lbDoctorName->TabIndex = 1;
-			this->lbDoctorName->Text = L"doctor name";
-			this->lbDoctorName->TextAlign = System::Drawing::ContentAlignment::MiddleLeft;
 			// 
 			// label3
 			// 
@@ -290,68 +152,83 @@ namespace Telemedicine {
 			this->label3->TabIndex = 1;
 			this->label3->Text = L"Appointment";
 			// 
-			// btnCancelAppointment
+			// dataGridView1
 			// 
-			this->btnCancelAppointment->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->btnCancelAppointment->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->btnCancelAppointment->Location = System::Drawing::Point(355, 3);
-			this->btnCancelAppointment->Name = L"btnCancelAppointment";
-			this->btnCancelAppointment->Size = System::Drawing::Size(347, 68);
-			this->btnCancelAppointment->TabIndex = 2;
-			this->btnCancelAppointment->TabStop = false;
-			this->btnCancelAppointment->Text = L"Cancel Appointment";
-			this->btnCancelAppointment->UseVisualStyleBackColor = true;
-			this->btnCancelAppointment->Click += gcnew System::EventHandler(this, &SeeAppointment::btnCancelAppointment_Click);
+			this->dataGridView1->AllowUserToAddRows = false;
+			this->dataGridView1->AllowUserToDeleteRows = false;
+			this->dataGridView1->Anchor = System::Windows::Forms::AnchorStyles::None;
+			this->dataGridView1->AutoSizeColumnsMode = System::Windows::Forms::DataGridViewAutoSizeColumnsMode::Fill;
+			this->dataGridView1->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+			this->dataGridView1->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {
+				this->ID, this->Column1,
+					this->Column2, this->Column3, this->Status, this->Cancel, this->Completed
+			});
+			this->dataGridView1->Location = System::Drawing::Point(12, 282);
+			this->dataGridView1->Name = L"dataGridView1";
+			this->dataGridView1->ReadOnly = true;
+			this->dataGridView1->RowHeadersWidth = 51;
+			this->dataGridView1->RowTemplate->Height = 24;
+			this->dataGridView1->Size = System::Drawing::Size(1201, 401);
+			this->dataGridView1->TabIndex = 4;
+			this->dataGridView1->CellClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &SeeAppointment::dataGridView1_CellClick);
 			// 
-			// tableLayoutPanel2
+			// ID
 			// 
-			this->tableLayoutPanel2->Anchor = System::Windows::Forms::AnchorStyles::None;
-			this->tableLayoutPanel2->ColumnCount = 2;
-			this->tableLayoutPanel2->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-				50)));
-			this->tableLayoutPanel2->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Percent,
-				50)));
-			this->tableLayoutPanel2->Controls->Add(this->btnCancelAppointment, 1, 0);
-			this->tableLayoutPanel2->Controls->Add(this->btnAppointmentCompleted, 0, 0);
-			this->tableLayoutPanel2->Location = System::Drawing::Point(266, 474);
-			this->tableLayoutPanel2->Name = L"tableLayoutPanel2";
-			this->tableLayoutPanel2->RowCount = 1;
-			this->tableLayoutPanel2->RowStyles->Add((gcnew System::Windows::Forms::RowStyle(System::Windows::Forms::SizeType::Percent, 50)));
-			this->tableLayoutPanel2->Size = System::Drawing::Size(705, 74);
-			this->tableLayoutPanel2->TabIndex = 3;
+			this->ID->HeaderText = L"ID";
+			this->ID->MinimumWidth = 6;
+			this->ID->Name = L"ID";
 			// 
-			// btnAppointmentCompleted
+			// Column1
 			// 
-			this->btnAppointmentCompleted->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom)
-				| System::Windows::Forms::AnchorStyles::Left)
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->btnAppointmentCompleted->Font = (gcnew System::Drawing::Font(L"Calibri", 16.2F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-				static_cast<System::Byte>(0)));
-			this->btnAppointmentCompleted->Location = System::Drawing::Point(3, 3);
-			this->btnAppointmentCompleted->Name = L"btnAppointmentCompleted";
-			this->btnAppointmentCompleted->Size = System::Drawing::Size(346, 68);
-			this->btnAppointmentCompleted->TabIndex = 3;
-			this->btnAppointmentCompleted->TabStop = false;
-			this->btnAppointmentCompleted->Text = L"Appointment Completed";
-			this->btnAppointmentCompleted->UseVisualStyleBackColor = true;
-			this->btnAppointmentCompleted->Click += gcnew System::EventHandler(this, &SeeAppointment::btnAppointmentCompleted_Click);
+			this->Column1->HeaderText = L"Doctor Name";
+			this->Column1->MinimumWidth = 6;
+			this->Column1->Name = L"Column1";
+			// 
+			// Column2
+			// 
+			this->Column2->HeaderText = L"Schedule Time";
+			this->Column2->MinimumWidth = 6;
+			this->Column2->Name = L"Column2";
+			// 
+			// Column3
+			// 
+			this->Column3->HeaderText = L"Duration Minutes";
+			this->Column3->MinimumWidth = 6;
+			this->Column3->Name = L"Column3";
+			// 
+			// Status
+			// 
+			this->Status->HeaderText = L"Status";
+			this->Status->MinimumWidth = 6;
+			this->Status->Name = L"Status";
+			// 
+			// Cancel
+			// 
+			this->Cancel->HeaderText = L"Cancel";
+			this->Cancel->MinimumWidth = 6;
+			this->Cancel->Name = L"Cancel";
+			this->Cancel->Text = L"Cancel";
+			this->Cancel->UseColumnTextForButtonValue = true;
+			// 
+			// Completed
+			// 
+			this->Completed->HeaderText = L"Completed";
+			this->Completed->MinimumWidth = 6;
+			this->Completed->Name = L"Completed";
+			this->Completed->Text = L"Completed";
+			this->Completed->UseColumnTextForButtonValue = true;
 			// 
 			// SeeAppointment
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(1225, 779);
-			this->Controls->Add(this->tableLayoutPanel2);
+			this->Controls->Add(this->dataGridView1);
 			this->Controls->Add(this->label3);
-			this->Controls->Add(this->tableLayoutPanel1);
 			this->MinimumSize = System::Drawing::Size(1243, 826);
 			this->Name = L"SeeAppointment";
 			this->Text = L"SeeAppointment";
-			this->tableLayoutPanel1->ResumeLayout(false);
-			this->tableLayoutPanel2->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->dataGridView1))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -359,47 +236,24 @@ namespace Telemedicine {
 #pragma endregion
 
 
-	private: System::Void btnAppointmentCompleted_Click(System::Object^ sender, System::EventArgs^ e) {
-		try {
+
+private: System::Void dataGridView1_CellClick(System::Object^ sender, System::Windows::Forms::DataGridViewCellEventArgs^ e) {
+
+	try {
 			String^ connString = "Data Source=localhost\\sqlexpress;Initial Catalog=test;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
 			SqlConnection sqlConn(connString);
 			sqlConn.Open();
 
-			String^ sqlQuery = "UPDATE appointment SET status = 'Completed' WHERE patient_id = @patientId;";
-			SqlCommand command(sqlQuery, % sqlConn);
-			command.Parameters->AddWithValue("@patientId", patient->patientId);
-			int rowsAffected = command.ExecuteNonQuery();
-			if (rowsAffected > 0) {
-				MessageBox::Show("Appointment status updated!",
-					"Appointmrnt completed", MessageBoxButtons::OK);
-				this->Close();
-			}
-			else {
-				MessageBox::Show("Unable to update appointment status",
-					"Failed to update", MessageBoxButtons::OK);
-			}
-		}
-		catch (SqlException^ sqlEx)
-		{
-			MessageBox::Show(String::Format("Database error: {0}", sqlEx->Message),
-				"Database Error", MessageBoxButtons::OK);
-		}
-		catch (Exception^ ex)
-		{
-			MessageBox::Show(String::Format("Error: {0}", ex->Message),
-				"Error", MessageBoxButtons::OK);
-		}
-	}
+	if (e->ColumnIndex == this->dataGridView1->Columns["Cancel"]->Index && e->RowIndex >= 0) {
+		String^ appointmentId = (this->dataGridView1->Rows[e->RowIndex]->Cells["ID"]->Value)->ToString();
+		this->dataGridView1->Rows[e->RowIndex]->Cells["Status"]->Value = "Cancelled";
+		this->dataGridView1->Rows[e->RowIndex]->Cells["Cancel"]->ReadOnly = true;
+		this->dataGridView1->Rows[e->RowIndex]->DefaultCellStyle->BackColor = Color::LightGray;
 
-	private: System::Void btnCancelAppointment_Click(System::Object^ sender, System::EventArgs^ e) {
-		try {
-			String^ connString = "Data Source=localhost\\sqlexpress;Initial Catalog=test;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
-			SqlConnection sqlConn(connString);
-			sqlConn.Open();
-
-			String^ sqlQuery = "UPDATE appointment SET status = 'Cancelled' WHERE patient_id = @patientId;";
+	
+			String^ sqlQuery = "UPDATE appointment SET status = 'Cancelled' WHERE appointment_id = @appointmentId;";
 			SqlCommand command(sqlQuery, % sqlConn);
-			command.Parameters->AddWithValue("@patientId", patient->patientId);
+			command.Parameters->AddWithValue("@appointmentId", Int32::Parse(appointmentId));
 			int rowsAffected = command.ExecuteNonQuery();
 			if (rowsAffected > 0) {
 				MessageBox::Show("Appointment Cancelled!",
@@ -407,10 +261,32 @@ namespace Telemedicine {
 				this->Close();
 			}
 			else {
-				MessageBox::Show("Unable to Cancel appointment ",
+				MessageBox::Show("Unable to Cancel appointment status",
 					"Failed to update", MessageBoxButtons::OK);
 			}
+	
+	}
+	else if (e->ColumnIndex == this->dataGridView1->Columns["Completed"]->Index && e->RowIndex >= 0) {
+		String^ appointmentId = (this->dataGridView1->Rows[e->RowIndex]->Cells["ID"]->Value)->ToString();
+		this->dataGridView1->Rows[e->RowIndex]->Cells["Status"]->Value = "Completed";
+		this->dataGridView1->Rows[e->RowIndex]->Cells["Completed"]->ReadOnly = true;
+
+		String^ sqlQuery = "UPDATE appointment SET status = 'Completed' WHERE Appointment_id = @appointmentId;";
+		SqlCommand command(sqlQuery, % sqlConn);
+		command.Parameters->AddWithValue("@appointmentId", appointmentId);
+		int rowsAffected = command.ExecuteNonQuery();
+		if (rowsAffected > 0) {
+			MessageBox::Show("Appointment status updated!",
+				"Success", MessageBoxButtons::OK);
+			this->Close();
 		}
+		else {
+			MessageBox::Show("Unable to update appointment status",
+				"Failed to update", MessageBoxButtons::OK);
+		}
+
+	}
+	}
 		catch (SqlException^ sqlEx)
 		{
 			MessageBox::Show(String::Format("Database error: {0}", sqlEx->Message),
@@ -421,6 +297,6 @@ namespace Telemedicine {
 			MessageBox::Show(String::Format("Error: {0}", ex->Message),
 				"Error", MessageBoxButtons::OK);
 		}
-	}
+}
 };
 }

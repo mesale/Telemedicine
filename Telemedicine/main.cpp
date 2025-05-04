@@ -26,7 +26,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
     //patientLogin.ShowDialog();
     Patient^ patient = nullptr; 
     Doctor^ doctor = nullptr;
-    
+    while (true) {
         Telemedicine::MainMenu mainMenu;
         mainMenu.ShowDialog();
         if (mainMenu.isPatient) {
@@ -50,32 +50,49 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmd
                     break;
                 }
             }
+            if (patient != nullptr) {
 
-            Telemedicine::PatientDashboard patientDashboard(patient);
-            patientDashboard.ShowDialog();
-            
-            if (patientDashboard.isBookAppointment) {
-                Telemedicine::BookAppointment bookAppointment(patient);
-                bookAppointment.ShowDialog();
+                while (true) {
+                    Telemedicine::PatientDashboard patientDashboard(patient);
+                    patientDashboard.ShowDialog();
+
+                    if (patientDashboard.isBookAppointment) {
+                        Telemedicine::BookAppointment bookAppointment(patient);
+                        bookAppointment.ShowDialog();
+                        continue;
+
+                    }
+                    else if (patientDashboard.isSeeAppointment) {
+                        Telemedicine::SeeAppointment seeAppointment(patient);
+                        seeAppointment.ShowDialog();
+                        continue;
+                    }
+                    else if (patientDashboard.isMedicalRecord) {
+                        Telemedicine::PatientMedicalRecord patientMedicalRecord(patient);
+                        patientMedicalRecord.ShowDialog();
+                        continue;
+                    }
+                    else
+                        break;
+                }
 
             }
-            else if (patientDashboard.isSeeAppointment) {
-                Telemedicine::SeeAppointment seeAppointment(patient);
-                seeAppointment.ShowDialog();
-            }
-            else if (patientDashboard.isMedicalRecord) {
-                Telemedicine::PatientMedicalRecord patientMedicalRecord(patient);
-                patientMedicalRecord.ShowDialog();
-            }
+            continue;
         }
         else if (mainMenu.isDoctor) {
             Telemedicine::DoctorLogin doctorLogin;
             doctorLogin.ShowDialog();
             doctor = doctorLogin.doctor;
-
-            Telemedicine::DoctorDashboard doctorDashboard(doctor);
-            doctorDashboard.ShowDialog();
+            if (doctor != nullptr) {
+                Telemedicine::DoctorDashboard doctorDashboard(doctor);
+                doctorDashboard.ShowDialog();
+            }
+            continue;
         }
+        else
+            break;
+    }
+
         
            
     

@@ -9,5 +9,5 @@ public:
 	int doctorId;
 	String^ scheduledTime;
 	int durationMinuits;
-	String^ status;
+	String^ status; 
 };
